@@ -11,12 +11,20 @@ namespace hashcode2021
 
         static void Main(string[] args)
         {
-            SubMain();
+            try
+            {
+                SubMain();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public static void SubMain()
         {
-            var file = "f.txt";
+            var file = "a.txt";
             var input = $@"input\{file}";
             var lines = File.ReadAllLines(input);
             var line0 = lines[0].Split(" ");
@@ -79,9 +87,7 @@ namespace hashcode2021
                     if (greenStreet != null)
                     {
                         var dqCar = greenStreet.CarsAtEnd.Dequeue();
-                        dqCar.Cost -= streets[dqCar.Names[dqCar.Position]].L;
-                        dqCar.Position++;
-                        dqCar.TimeToEnd = streets[dqCar.Names[dqCar.Position]].L;
+                        dqCar.NextStreet();
                         travellingCars.Add(dqCar);
                         greenStreet.GreenTime--;
                     }
@@ -170,23 +176,31 @@ namespace hashcode2021
             public bool IsFinito => Position == P - 1;
             public string[] Names;
             public int TimeToEnd;
+            private Queue<Street> streets;
 
             public override string ToString()
             {
                 return $"Cost:{Cost},P:{P},Names:{String.Join(";", Names)},Position:{Position}";
             }
 
-            public int Cost { get; set; }
+            public int Cost => streets.Count > 1 ? streets.Skip(1).Select(x => x.L).Sum() : 0;
 
             public Car(Street[] streets, string[] names)
             {
-                var namesH = new HashSet<string>(names.Skip(1));
+                var namesH = new HashSet<string>(names);
+                this.streets = new Queue<Street>();
                 Names = names;
                 foreach (var s in streets)
                 {
                     if (namesH.Contains(s.Name))
-                        Cost += s.L;
+                        this.streets.Enqueue(s);
                 }
+            }
+
+            public void NextStreet()
+            {
+                Position++;
+                streets.Dequeue();
             }
         }
     }
